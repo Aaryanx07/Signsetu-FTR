@@ -65,3 +65,35 @@ def test_auth_token_predictability():
     assert decoded_timestamp != expires_at, \
     "BUG: decoded token timestamp matches expiresAt"
 
+def test_expired_token_access(video):
+    
+    url = f"{BASE_URL}/api/auth"
+
+    random_candidate_id = random.randint(100000, 999999)
+    use_candidate_id = str(random_candidate_id)
+    
+    headers = {
+        "Content-Type": "application/json",
+        "X-Candidate-ID": use_candidate_id
+    }
+
+    response = requests.post(url, headers=headers)
+
+    assert response.status_code in [200, 201]
+
+    data = response.json()
+
+    token = data["token"]
+
+    time.sleep(5)
+
+    video_url = f"{BASE_URL}/api/videos/{video}"
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "X-Candidate-ID": use_candidate_id
+    }
+    response = requests.get(video_url, headers=headers)
+
+    assert response.status_code == 200, \
+        f"BUG: Token expired very quickly, Expected(401), Got({response.status_code})"
