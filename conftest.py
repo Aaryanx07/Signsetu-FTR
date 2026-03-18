@@ -4,7 +4,6 @@ from config import USER1_HEADERS
 
 api = VideoAPI()
 
-
 @pytest.fixture
 def video():
 

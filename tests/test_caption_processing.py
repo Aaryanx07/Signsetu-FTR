@@ -4,8 +4,23 @@ from config import USER1_HEADERS
 
 api = VideoAPI()
 
+def test_process_captions_success(video):
 
-def test_duplicate_caption_processing(video):
+    response = api.process_captions(video, USER1_HEADERS)
+
+    assert response.status_code in [200, 202]
+
+def test_get_captions_after_processing(video):
+
+    api.process_captions(video, USER1_HEADERS)
+
+    time.sleep(3)
+
+    response = api.get_captions(video, USER1_HEADERS)
+
+    assert response.status_code in [200, 202, 404]
+
+def test_duplicate_caption_processing_(video):
 
     first = api.process_captions(video, USER1_HEADERS)
 
@@ -16,7 +31,6 @@ def test_duplicate_caption_processing(video):
     assert second.status_code in [400, 409], \
         f"BUG: duplicate processing allowed ({second.status_code})"
 
-
 def test_fetch_captions_while_processing(video):
 
     api.process_captions(video, USER1_HEADERS)
@@ -24,4 +38,4 @@ def test_fetch_captions_while_processing(video):
     response = api.get_captions(video, USER1_HEADERS)
 
     assert response.status_code in [202, 404], \
-        "BUG: captions endpoint returned invalid response"
+        f"BUG: captions endpoint returned invalid response ({response.status_code})"
